@@ -4,6 +4,7 @@ using DefineFIT.Domain.Common.Handlers;
 using DefineFIT.Domain.Entities;
 using DefineFIT.Domain.Repositories;
 using DefineFIT.Domain.Requests;
+using DefineFIT.Domain.Responses;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -30,12 +31,33 @@ namespace DefineFIT.Application.Services
             _logger = logger;
         }
 
-        public async Task<string> GenerateToken(LoginRequest request)
+        public async Task<LoginResponse> GenerateToken(LoginRequest request, bool isRefreshToken = false)
         {
-            var user = await GetUserByEmail(request);
-            ValidateLogin(request, user);
-            return GenerateJwtToken(user);
+            var user = await GetUserByEmail(request.Email);
+            var expirationToken = DateTime.Now.AddMinutes(30);
+            var expirationRefreshToken = DateTime.Now.AddDays(1);
+
+            if (!isRefreshToken)
+                ValidateLogin(request, user);
+
+            if (!user.Active)
+            {
+                _logger.LogError($"User with email {request.Email} is not active.");
+                throw ExceptionHandler.CreateException<InvalidDataException>(message: "Usuário inativo.", _logger);
+            }
+
+            var token = GenerateJwtToken(user, expirationToken, true);
+            var refreshToken = GenerateJwtToken(user, expirationRefreshToken, false);
+
+            return new LoginResponse
+            {
+                Token = token,
+                RefreshToken = refreshToken,
+                TokenExpiration = expirationToken,
+                RefreshTokenExpiration = expirationRefreshToken
+            };
         }
+
         private void ValidateLogin(LoginRequest request, User user)
         {
             if (!user.Password.Equals(request.Password))
@@ -48,12 +70,12 @@ namespace DefineFIT.Application.Services
             }
         }
 
-        private async Task<User> GetUserByEmail(LoginRequest request)
+        private async Task<User> GetUserByEmail(string email)
         {
-            var user = await _userRepository.GetByEmailAsync(request.Email);
+            var user = await _userRepository.GetByEmailAsync(email);
             if (user is null)
             {
-                _logger.LogError($"User with email {request.Email} not found.");
+                _logger.LogError($"User with email {email} not found.");
                 throw ExceptionHandler.CreateException<EntityNotFoundException>(
                     message: "Email não cadastrado.",
                     _logger
@@ -63,7 +85,7 @@ namespace DefineFIT.Application.Services
             return user;
         }
 
-        private string GenerateJwtToken(User user)
+        private string GenerateJwtToken(User user, DateTime expiration, bool addUserClaims)
         {
             var secretKey = _configuration["Jwt:SecretKey"];
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey ?? string.Empty));
@@ -75,18 +97,36 @@ namespace DefineFIT.Application.Services
             var tokenOptions = new JwtSecurityToken(
                     issuer: issuer,
                     audience: audience,
-                    claims: new[]
-                    {
-                        new Claim(type: ClaimTypes.Name, value: user.Name),
-                        new Claim(type: ClaimTypes.Email, value: user.Email),
-                        new Claim(type: ClaimTypes.Role, value: user.Role.ToString())
-                    },
-                    expires: DateTime.Now.AddMinutes(30),
+                    claims: GenerateClaims(user, addUserClaims),
+                    expires: expiration,
                     signingCredentials: credentials
                 );
 
             var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
             return token;
         }
+
+        private static List<Claim> GenerateClaims(User user, bool addUserClaims)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(type: ClaimTypes.Email, value: user.Email),
+            };
+
+            if (addUserClaims)
+            {
+                claims.AddRange(
+                [
+                    new Claim(type: ClaimTypes.Name, value: user.Name),
+                    new Claim(type: ClaimTypes.Email, value: user.Email),
+                    new Claim(type: ClaimTypes.Role, value: user.Role.ToString())
+                ]);
+            }
+
+            return claims;
+        }
+
+        public string GetEmail(ClaimsPrincipal user)
+            => user.FindFirst(ClaimTypes.Email)?.Value!;
     }
 }

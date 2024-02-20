@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DefineFIT.Domain.Validators
 {
-    public class UserCreateValidator : AbstractValidator<UserRequest>
+    public class UserCreateValidator : AbstractValidator<UserCreateRequest>
     {
         public UserCreateValidator(IUserRepository userRepository)
         {
@@ -17,7 +17,7 @@ namespace DefineFIT.Domain.Validators
                 .NotEmpty()
                 .WithMessage("CPF is required.")
                 .MustAsync(async (cpf, cancellation) => !await userRepository.ExistsByCpfAsync(cpf))
-                .WithMessage("CPF already exists.");
+                .WithMessage("CPF já cadastrado.");
         }
     }
 }

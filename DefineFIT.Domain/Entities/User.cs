@@ -12,9 +12,10 @@ namespace DefineFIT.Domain.Entities
         public string PhoneNumber { get; private set; } = string.Empty;
         public DateTime BirthDate { get; private set; }
         public Roles Role { get; private set; } = Roles.User;
+        public bool Active { get; private set; }
 
 
-        public static User Create(UserRequest userRequest)
+        public static User Create(UserCreateRequest userRequest)
         {
             var user =  new User
             {
@@ -30,15 +31,15 @@ namespace DefineFIT.Domain.Entities
             return user;
         }
 
-        public void Update(UserRequest userRequest)
+        public void Update(UserUpdateRequest userRequest)
         {
-            Name = userRequest.Name;
-            Cpf = userRequest.Cpf;
-            Email = userRequest.Email;
-            Password = userRequest.Password;
-            PhoneNumber = userRequest.PhoneNumber;
-            BirthDate = userRequest.BirthDate;
-
+            Name = userRequest.Name ?? Name;
+            Cpf = userRequest.Cpf ?? Cpf;
+            Email = userRequest.Email ?? Email;
+            PhoneNumber = userRequest.PhoneNumber ?? PhoneNumber;
+            BirthDate = userRequest.BirthDate ?? BirthDate;
+            Active = userRequest.Active ?? Active;
+            
             SetAudit(userRequest.User);
         }
     }

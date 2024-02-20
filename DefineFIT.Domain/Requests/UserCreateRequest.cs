@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace DefineFIT.Domain.Requests
 {
-    public class UserRequest : RequestBase
+    public class UserCreateRequest : RequestBase
     {
         [Required]
         public string Name { get; set; } = null!;
@@ -46,7 +46,7 @@ namespace DefineFIT.Domain.Requests
 
         public override bool IsValid()
         {
-            ValidationResult = new UserRequestValidator()
+            ValidationResult = new UserCreateRequestValidator()
                 .Validate(this);
             return ValidationResult.IsValid;
         }

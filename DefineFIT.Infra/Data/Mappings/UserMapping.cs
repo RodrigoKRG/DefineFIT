@@ -18,6 +18,7 @@ namespace DefineFIT.Infra.Data.Mappings
             builder.Property(p => p.CreatedBy).HasColumnName("CreatedBy").HasColumnType("varchar(50)").IsRequired();
             builder.Property(p => p.UpdatedAt).HasColumnName("UpdatedAt").HasColumnType("datetime");
             builder.Property(p => p.UpdatedBy).HasColumnName("UpdatedBy").HasColumnType("varchar(50)");
+            builder.Property(p => p.Active).HasColumnName("Active").HasColumnType("bit").HasDefaultValue(true).IsRequired();
         }
    
     }

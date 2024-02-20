@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace DefineFIT.Domain.Requests.Validators
 {
-    public class UserRequestValidator : AbstractValidator<UserRequest>
+    public class UserCreateRequestValidator : AbstractValidator<UserCreateRequest>
     {
-        public UserRequestValidator()
+        public UserCreateRequestValidator()
         {
             RuleFor(user => user.Name)
                 .NotEmpty()

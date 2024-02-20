@@ -1,17 +1,13 @@
+using DefineFIT.Api.Extensions;
+using DefineFIT.Api.IoC;
 using DefineFIT.Api.Middlewares;
-using DefineFIT.Application.Services;
-using DefineFIT.Application.Services.Interfaces;
-using DefineFIT.Domain.Repositories;
 using DefineFIT.Infra;
-using DefineFIT.Infra.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-var configuration = builder.Configuration;
+IConfiguration configuration = builder.Configuration;
 
-// Adicione os serviços ao container.
-var IsDevelopment = Environment
-                    .GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+var IsDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
 var connectionString = IsDevelopment ?
       builder.Configuration.GetConnectionString("DefaultConnection") :
@@ -19,11 +15,9 @@ var connectionString = IsDevelopment ?
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddSwagger();
+builder.Services.AddAuthentication(configuration);
+builder.Services.RegisterServices();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -38,15 +32,16 @@ using (var scope = app.Services.CreateScope())
     dbContext.Database.Migrate();
 }
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 app.UseMiddleware<ExceptionHandlerMiddleware>();
-
-app.UseSwagger();
-app.UseSwaggerUI();
-
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
 
 static string GetHerokuConnectionString() =>

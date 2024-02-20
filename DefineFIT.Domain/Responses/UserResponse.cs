@@ -11,6 +11,7 @@ namespace DefineFIT.Domain.Responses
         public string Password { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
         public DateTime BirthTime { get; set; }
+        public bool active { get; set; }
 
         public static UserResponse Build(User user)
         {
@@ -23,6 +24,7 @@ namespace DefineFIT.Domain.Responses
                 Password = user.Password,
                 PhoneNumber = user.PhoneNumber,
                 BirthTime = user.BirthDate,
+                active = user.Active
             };
         }
     }
