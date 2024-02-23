@@ -2,6 +2,7 @@
 using DefineFIT.Domain.Common.Exceptions;
 using DefineFIT.Domain.Common.Handlers;
 using DefineFIT.Domain.Entities;
+using DefineFIT.Domain.Helpers;
 using DefineFIT.Domain.Repositories;
 using DefineFIT.Domain.Requests;
 using DefineFIT.Domain.Responses;
@@ -36,6 +37,11 @@ namespace DefineFIT.Application.Services
                  );
             }
             var user = User.Create(request);
+            
+            var salt = PasswordHashHelper.GenerateSalt();
+            var hashPassword = PasswordHashHelper.GenerateHashPassword(request.Password, salt);
+            user.SetPassword(hashPassword, salt);
+
             var result = await _userRepository.AddAsync(user);
             return UserResponse.Build(result);
         }

@@ -9,6 +9,7 @@ namespace DefineFIT.Domain.Entities
         public string Cpf { get; private set; } = string.Empty;
         public string Email { get; private set; } = string.Empty;
         public string Password { get; private set; } = string.Empty;
+        public byte[] Salt { get; set; } = new byte[16];
         public string PhoneNumber { get; private set; } = string.Empty;
         public DateTime BirthDate { get; private set; }
         public Roles Role { get; private set; } = Roles.User;
@@ -25,6 +26,7 @@ namespace DefineFIT.Domain.Entities
                 Password = userRequest.Password,
                 PhoneNumber = userRequest.PhoneNumber,
                 BirthDate = userRequest.BirthDate,
+                Active = true
             };
 
             user.SetAudit(userRequest.User);
@@ -41,6 +43,12 @@ namespace DefineFIT.Domain.Entities
             Active = userRequest.Active ?? Active;
             
             SetAudit(userRequest.User);
+        }
+
+        public void SetPassword(string password, byte[] salt)
+        {
+            Password = password;
+            Salt = salt;
         }
     }
 }

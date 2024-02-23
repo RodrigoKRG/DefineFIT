@@ -2,6 +2,7 @@
 using DefineFIT.Domain.Common.Exceptions;
 using DefineFIT.Domain.Common.Handlers;
 using DefineFIT.Domain.Entities;
+using DefineFIT.Domain.Helpers;
 using DefineFIT.Domain.Repositories;
 using DefineFIT.Domain.Requests;
 using DefineFIT.Domain.Responses;
@@ -60,7 +61,8 @@ namespace DefineFIT.Application.Services
 
         private void ValidateLogin(LoginRequest request, User user)
         {
-            if (!user.Password.Equals(request.Password))
+            var hashPassword = PasswordHashHelper.GenerateHashPassword(request.Password, user.Salt);
+            if (!hashPassword.Equals(user.Password))
             {
                 _logger.LogError($"Password Invalid");
                 throw ExceptionHandler.CreateException<InvalidDataException>(

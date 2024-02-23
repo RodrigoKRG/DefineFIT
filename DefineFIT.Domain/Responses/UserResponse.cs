@@ -8,7 +8,6 @@ namespace DefineFIT.Domain.Responses
         public string Name { get; set; } = string.Empty;
         public string Cpf { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
         public DateTime BirthTime { get; set; }
         public bool active { get; set; }
@@ -21,7 +20,6 @@ namespace DefineFIT.Domain.Responses
                 Name = user.Name,
                 Cpf = user.Cpf,
                 Email = user.Email,
-                Password = user.Password,
                 PhoneNumber = user.PhoneNumber,
                 BirthTime = user.BirthDate,
                 active = user.Active
