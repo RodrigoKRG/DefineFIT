@@ -33,6 +33,11 @@ namespace DefineFIT.Api.Controllers
             return user is null ? NotFound() : Ok(user);
         }
 
+        /// <summary>
+        /// Retorna um usuário
+        /// </summary>
+        /// <response code="200">Retorna uma usuário</response>
+        /// <response code="400">Não existe usuário com o id informado</response>
         [HttpPost("create")]
         public async Task<IActionResult> CreateAsync([FromBody] UserCreateRequest request)
         {
